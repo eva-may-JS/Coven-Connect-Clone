@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row g-0 align-items-center">
+        <div class="col-md-6 text-center">
+            <!-- Event title -->
+            <h1 class="event-title">{{ event.title }}</h1>
+            <!-- Event location -->
+            <p class="event-subtitle"> <strong>Where?</strong> {{ event.location }}</p>
+            <!-- Event date -->
+            <p class="event-subtitle"> <strong>When?</strong> {{ event.date }}</p>
+            <!-- Event category -->
+            <p class="event-subtitle"> <strong>Event type:</strong> {{ event.get_category_display }}</p>
+        </div>
+        <div class="col-md-6 text-center mt-4">
+            <img src="{% static 'images/default.jpg' %}" class="scale img-fluid" alt="placeholder">
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col card mb-4 mt-3 left top">
+            <div class="card-body">
+                <!-- Event description -->
+                <p class="card-text">
+                    {{ event.description | safe }}
+                </p>
+                <p class="card-text muted-text">
+                    <!-- get_FOO_display method used to display associated string representation of integer model field -->
+                    <strong>Suitable for familiars?</strong> {{ event.get_familiar_display }}
+                </p>
+            </div>
+        </div>
+    </div>
+    <!-- Displaying count of comments -->
+    <div class="row">
+        <div class="col-12">
+            <strong class="text-secondary">
+                <i class="far fa-comments yellow"></i> <span class="yellow">{{ comment_count }}</span>
+            </strong>
+        </div>
+        <div class="col-12">
+            <hr class="hr-light">
+        </div>
+    </div>
+    <!-- Displaying Comments -->
+    <div class="row">
+        <div class="col-md-8 card mb-4  mt-3 ">
+            <h3>Comments:</h3>
+            <div class="card-body">
+                <!-- We want a for loop inside the empty control tags
+          to iterate through each comment in comments -->
+                {% for comment in comments %}
+                <div class="p-2 comments
+          {% if not comment.approved and comment.author == user %}
+          faded{% elif not comment.approved %} d-none{% endif %}">
+                    <p class="font-weight-bold yellow">
+                        {{ comment.author }} <span class="font-weight-normal">said:</span>
+                    </p>
+                    <div id="comment{{ comment.id }}">
+                        {{ comment.content | linebreaks }}
+                    </div>
+                    <span class="font-weight-normal faded">
+                        On: {{ comment.created_on }}
+                    </span>
+                    {% if not comment.approved and comment.author == user %}
+                    <p class="approval">
+                        This comment is awaiting approval
+                    </p>
+                    {% endif %}
+                </div>
+                <!-- Our for loop ends here -->
+                {% endfor %}
+            </div>
+        </div>
+        <!-- Creating New Comments -->
+        <div class="col-md-4 card mb-4 mt-3">
+            <div class="card-body">
+                {% if user.is_authenticated %}
+                <h3>Leave a comment:</h3>
+                <p>Posting as: <span class="yellow">{{ user.username }}</span></p>
+                <form id="commentForm" method="post" style="margin-top: 1.3em;">
+                    {{ comment_form | crispy }}
+                    {% csrf_token %}
+                    <button id="submitButton" type="submit" class="btn btn-signup btn-lg">Submit</button>
+                </form>
+                {% else %}
+                <p>Log in to leave a comment</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
